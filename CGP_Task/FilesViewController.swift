@@ -7,7 +7,10 @@
 
 import UIKit
 
-class FilesViewController: UIViewController {
+class FilesViewController: UIViewController,UISearchBarDelegate,UICollectionViewDelegate, UICollectionViewDataSource {
+    
+    let searchBar = UISearchBar()
+    let collectionView = UICollectionView(frame: .zero, collectionViewLayout: UICollectionViewFlowLayout())
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -15,7 +18,26 @@ class FilesViewController: UIViewController {
         
         setupNavigationBarTitle()
         addRightBarButtonItems()
-        setUpAddButton()
+        setUpSearchBar()
+        setupViews()
+        setupConstraints()
+    }
+    
+    
+    private func setUpSearchBar() {
+        searchBar.backgroundImage = UIImage()
+        searchBar.placeholder = "Search documents"
+        searchBar.delegate = self
+        view.addSubview(searchBar)
+        
+        searchBar.translatesAutoresizingMaskIntoConstraints = false
+        let safeArea = view.safeAreaLayoutGuide
+        NSLayoutConstraint.activate([
+            searchBar.leadingAnchor.constraint(equalTo: safeArea.leadingAnchor,constant: 10),
+            searchBar.trailingAnchor.constraint(equalTo: safeArea.trailingAnchor,constant: -10),
+            searchBar.topAnchor.constraint(equalTo: safeArea.topAnchor, constant: 10),
+            searchBar.heightAnchor.constraint(equalToConstant: 36)
+        ])
     }
     
     private func  setupNavigationBarTitle() {
@@ -33,8 +55,8 @@ class FilesViewController: UIViewController {
         self.navigationItem.setLeftBarButton(baritem, animated: true)
     }
     
-    func addRightBarButtonItems() {
-            
+    private func addRightBarButtonItems() {
+        
         let config = UIImage.SymbolConfiguration(pointSize: 25, weight: .light, scale: .default)
         
         let buttonOne = UIButton(type: .custom)
@@ -60,11 +82,9 @@ class FilesViewController: UIViewController {
         let rightBarButton = UIBarButtonItem(customView: stackview)
         self.navigationItem.rightBarButtonItem = rightBarButton
     }
-
-    func applyCommonStyles(to button: UIButton) {
+    
+    private func applyCommonStyles(to button: UIButton) {
         button.backgroundColor = .clear
-        button.widthAnchor.constraint(equalToConstant: 36).isActive = true
-        button.heightAnchor.constraint(equalToConstant: 36).isActive = true
         button.widthAnchor.constraint(equalToConstant: 36).isActive = true
         button.heightAnchor.constraint(equalToConstant: 36).isActive = true
         button.layer.cornerRadius = 10
@@ -72,10 +92,37 @@ class FilesViewController: UIViewController {
         button.contentEdgeInsets = UIEdgeInsets(top: button.contentEdgeInsets.top + 5, left: button.contentEdgeInsets.left + 5, bottom: button.contentEdgeInsets.bottom + 5, right: button.contentEdgeInsets.right + 5)
         button.layer.borderColor = UIColor.gray.cgColor
     }
-
     
-    private func setUpAddButton() {
+    func setupViews() {
+        collectionView.translatesAutoresizingMaskIntoConstraints = false
+        view.addSubview(collectionView)
         
+        collectionView.delegate = self
+        collectionView.dataSource = self
+        collectionView.register(UICollectionViewCell.self, forCellWithReuseIdentifier: "cell")
+        
+    }
+    
+    func setupConstraints() {
+        collectionView.translatesAutoresizingMaskIntoConstraints = false
+        let safeArea = view.safeAreaLayoutGuide
+        NSLayoutConstraint.activate([
+            collectionView.leadingAnchor.constraint(equalTo: safeArea.leadingAnchor, constant: 20),
+            collectionView.trailingAnchor.constraint(equalTo: safeArea.trailingAnchor, constant: -20),
+            collectionView.topAnchor.constraint(equalTo: searchBar.bottomAnchor, constant: 30),
+            collectionView.bottomAnchor.constraint(equalTo: safeArea.bottomAnchor)
+        ])
+    }
+    
+    // UICollectionView DataSource Methods
+    func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
+        return 100
+    }
+    
+    func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
+        let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "cell", for: indexPath)
+        cell.backgroundColor = .red
+        return cell
     }
 }
 
