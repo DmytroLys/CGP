@@ -8,7 +8,7 @@
 import UIKit
 
 class TabBarController: UITabBarController {
-
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         setUpTabs()
@@ -25,7 +25,7 @@ class TabBarController: UITabBarController {
     }
     
     private func setupTabBarColors() {
-        self.tabBar.tintColor = .systemPurple
+        self.tabBar.tintColor = UIColor(named: "FirstColor")
         self.tabBar.unselectedItemTintColor = .systemGray
         self.tabBar.backgroundColor = .systemBackground
     }
@@ -34,8 +34,8 @@ class TabBarController: UITabBarController {
         let nav = UINavigationController(rootViewController: vc)
         nav.tabBarItem.title = title
         nav.tabBarItem.image = image
-        nav.viewControllers.first?.navigationItem.title = title
-//        nav.viewControllers.first?.navigationItem.setRightBarButtonItems(<#T##items: [UIBarButtonItem]?##[UIBarButtonItem]?#>, animated: true)
+    
         return nav
     }
+    
 }
