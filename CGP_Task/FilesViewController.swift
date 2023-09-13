@@ -7,7 +7,7 @@
 
 import UIKit
 
-class FilesViewController: UIViewController,UISearchBarDelegate,UICollectionViewDelegate, UICollectionViewDataSource {
+class FilesViewController: UIViewController,UISearchBarDelegate {
     
     let searchBar = UISearchBar()
     let collectionView = UICollectionView(frame: .zero, collectionViewLayout: UICollectionViewFlowLayout())
@@ -29,15 +29,6 @@ class FilesViewController: UIViewController,UISearchBarDelegate,UICollectionView
         searchBar.placeholder = "Search documents"
         searchBar.delegate = self
         view.addSubview(searchBar)
-        
-        searchBar.translatesAutoresizingMaskIntoConstraints = false
-        let safeArea = view.safeAreaLayoutGuide
-        NSLayoutConstraint.activate([
-            searchBar.leadingAnchor.constraint(equalTo: safeArea.leadingAnchor,constant: 10),
-            searchBar.trailingAnchor.constraint(equalTo: safeArea.trailingAnchor,constant: -10),
-            searchBar.topAnchor.constraint(equalTo: safeArea.topAnchor, constant: 10),
-            searchBar.heightAnchor.constraint(equalToConstant: 36)
-        ])
     }
     
     private func  setupNavigationBarTitle() {
@@ -50,9 +41,9 @@ class FilesViewController: UIViewController,UISearchBarDelegate,UICollectionView
         ])
         
         titleLabel.attributedText = attributedString
-        let baritem = UIBarButtonItem(customView: titleLabel)
+        let titleBarItem = UIBarButtonItem(customView: titleLabel)
         
-        self.navigationItem.setLeftBarButton(baritem, animated: true)
+        self.navigationItem.setLeftBarButton(titleBarItem, animated: true)
     }
     
     private func addRightBarButtonItems() {
@@ -77,7 +68,7 @@ class FilesViewController: UIViewController,UISearchBarDelegate,UICollectionView
         stackview.distribution = .equalSpacing
         stackview.axis = .horizontal
         stackview.alignment = .center
-        stackview.spacing = 10
+        stackview.spacing = 15
         
         let rightBarButton = UIBarButtonItem(customView: stackview)
         self.navigationItem.rightBarButtonItem = rightBarButton
@@ -94,18 +85,27 @@ class FilesViewController: UIViewController,UISearchBarDelegate,UICollectionView
     }
     
     func setupViews() {
-        collectionView.translatesAutoresizingMaskIntoConstraints = false
         view.addSubview(collectionView)
         
         collectionView.delegate = self
         collectionView.dataSource = self
-        collectionView.register(UICollectionViewCell.self, forCellWithReuseIdentifier: "cell")
+        collectionView.register(CollectionViewCell.self, forCellWithReuseIdentifier: "CustomCollectionViewCell")
         
     }
     
     func setupConstraints() {
-        collectionView.translatesAutoresizingMaskIntoConstraints = false
+        searchBar.translatesAutoresizingMaskIntoConstraints = false
+        
         let safeArea = view.safeAreaLayoutGuide
+        NSLayoutConstraint.activate([
+            searchBar.leadingAnchor.constraint(equalTo: safeArea.leadingAnchor,constant: 10),
+            searchBar.trailingAnchor.constraint(equalTo: safeArea.trailingAnchor,constant: -10),
+            searchBar.topAnchor.constraint(equalTo: safeArea.topAnchor, constant: 10),
+            searchBar.heightAnchor.constraint(equalToConstant: 36)
+        ])
+        
+        
+        collectionView.translatesAutoresizingMaskIntoConstraints = false
         NSLayoutConstraint.activate([
             collectionView.leadingAnchor.constraint(equalTo: safeArea.leadingAnchor, constant: 20),
             collectionView.trailingAnchor.constraint(equalTo: safeArea.trailingAnchor, constant: -20),
@@ -114,15 +114,37 @@ class FilesViewController: UIViewController,UISearchBarDelegate,UICollectionView
         ])
     }
     
-    // UICollectionView DataSource Methods
+    @objc func print (){
+        Swift.print("Hello")
+    }
+}
+
+extension FilesViewController: UICollectionViewDelegateFlowLayout,UICollectionViewDelegate, UICollectionViewDataSource {
+    func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, sizeForItemAt indexPath: IndexPath) -> CGSize
+    {
+        // In this function is the code you must implement to your code project if you want to change size of Collection view
+        return CGSize(width: 116, height: 202)
+    }
+    
     func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
-        return 100
+        return 12
     }
     
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
-        let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "cell", for: indexPath)
-        cell.backgroundColor = .red
+        let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "CustomCollectionViewCell", for: indexPath) as! CollectionViewCell
+        
+        cell.backgroundColor = .lightGray
+        cell.nameLabel.text = "Get started with eft.pdf" // Replace with the name of your file
+        cell.dateLabel.text = "01.02.2021 • 1171 KB" // Replace with the date of creating file
+        let imageEllipsis = UIImage(systemName: "ellipsis.rectangle.fill")
+        cell.button.setImage(imageEllipsis, for: .normal)
+        
+        cell.button.addTarget(self, action: #selector(print), for: .touchUpInside)
+
+        
         return cell
     }
+    
+
 }
 
