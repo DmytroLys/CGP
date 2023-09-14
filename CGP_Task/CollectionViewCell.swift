@@ -14,7 +14,6 @@ class CollectionViewCell: UICollectionViewCell {
             imageView.translatesAutoresizingMaskIntoConstraints = false
             imageView.heightAnchor.constraint(equalToConstant: 90).isActive = true
             imageView.widthAnchor.constraint(equalToConstant: 65).isActive = true
-            imageView.backgroundColor = .white
             return imageView
         }()
         
@@ -52,7 +51,6 @@ class CollectionViewCell: UICollectionViewCell {
             stackView.spacing = 5
             stackView.distribution = .fill
             stackView.alignment = .center
-            stackView.backgroundColor = .cyan
             return stackView
         }()
         

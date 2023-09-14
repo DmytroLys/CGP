@@ -103,7 +103,7 @@ class FilesViewController: UIViewController,UISearchBarDelegate {
         NSLayoutConstraint.activate([
             searchBar.leadingAnchor.constraint(equalTo: safeArea.leadingAnchor,constant: 10),
             searchBar.trailingAnchor.constraint(equalTo: safeArea.trailingAnchor,constant: -10),
-            searchBar.topAnchor.constraint(equalTo: safeArea.topAnchor, constant: 10),
+            searchBar.topAnchor.constraint(equalTo: safeArea.topAnchor, constant: 15),
             searchBar.heightAnchor.constraint(equalToConstant: 36)
         ])
         
@@ -193,9 +193,13 @@ extension FilesViewController: UICollectionViewDelegateFlowLayout,UICollectionVi
             print("Failed to obtain preview image")
         }
         
-        cell.backgroundColor = .lightGray
+        if let fileAttributesText = getFileAttributes(url: url) {
+            cell.dateLabel.text = fileAttributesText
+        } else {
+            print("Failed to get file attributes")
+        }
+        
         cell.nameLabel.text = documentName
-        cell.dateLabel.text = "01.02.2021 • 1171 KB"
         let imageEllipsis = UIImage(systemName: "ellipsis.rectangle.fill")
         cell.button.setImage(imageEllipsis, for: .normal)
         cell.button.addTarget(self, action: #selector(didTapButton), for: .touchUpInside)
@@ -230,6 +234,39 @@ extension FilesViewController: UICollectionViewDelegateFlowLayout,UICollectionVi
         }
         
         return img
+    }
+    
+    func getFileAttributes(url: URL?) -> String? {
+        guard let url = url else {
+            return nil
+        }
+        
+        do {
+            let fileAttributes = try FileManager.default.attributesOfItem(atPath: url.path)
+            
+            // Get file creation date
+            var dateText: String?
+            if let creationDate = fileAttributes[.creationDate] as? Date {
+                let dateFormatter = DateFormatter()
+                dateFormatter.dateFormat = "dd.MM.yyyy"
+                dateText = dateFormatter.string(from: creationDate)
+            }
+            
+            // Get file size in KB
+            var fileSizeText: String?
+            if let fileSize = fileAttributes[.size] as? NSNumber {
+                let fileSizeInKB = fileSize.doubleValue / 1024.0
+                fileSizeText = String(format: "%.0f KB", fileSizeInKB)
+            }
+            
+            if let dateText = dateText, let fileSizeText = fileSizeText {
+                return "\(dateText) • \(fileSizeText)"
+            }
+        } catch {
+            print("Failed to get file attributes: \(error.localizedDescription)")
+        }
+        
+        return nil
     }
     
     
