@@ -6,11 +6,14 @@
 //
 
 import UIKit
+import PDFKit
 
 class FilesViewController: UIViewController,UISearchBarDelegate {
     
     let searchBar = UISearchBar()
     let collectionView = UICollectionView(frame: .zero, collectionViewLayout: UICollectionViewFlowLayout())
+    
+    var pdfDocs = [PDFDocument]()
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -114,10 +117,6 @@ class FilesViewController: UIViewController,UISearchBarDelegate {
         ])
     }
     
-    @objc func print (){
-        Swift.print("Hello")
-    }
-    
     func setupRoundButton() {
         let button = UIButton(type: .system)
         
@@ -126,8 +125,8 @@ class FilesViewController: UIViewController,UISearchBarDelegate {
         
         
         button.setTitle("+", for: .normal)
-            button.setTitleColor(.white, for: .normal)
-        button.titleLabel?.font = UIFont.systemFont(ofSize: 50, weight: .thin)// Adjust the font size as needed
+        button.setTitleColor(.white, for: .normal)
+        button.titleLabel?.font = UIFont.systemFont(ofSize: 50, weight: .thin)
         button.frame.size = CGSize(width: 60, height: 60)
         button.layer.cornerRadius = 30
         view.addSubview(button)
@@ -155,13 +154,18 @@ class FilesViewController: UIViewController,UISearchBarDelegate {
             button.bottomAnchor.constraint(equalTo: safeArea.bottomAnchor, constant: -20),
             button.trailingAnchor.constraint(equalTo: safeArea.trailingAnchor, constant: -20)
         ])
+        
+        button.addTarget(self, action: #selector(didTapButton), for: .touchUpInside)
     }
-
-
     
     
     @objc func didTapButton() {
-        Swift.print("Button tapped")
+        
+        let pdfType = "com.adobe.pdf"
+        let documentPicker = UIDocumentPickerViewController(documentTypes: [pdfType], in: .import)
+        documentPicker.delegate = self
+        documentPicker.allowsMultipleSelection = false
+        present(documentPicker, animated: true, completion: nil)
     }
 }
 
@@ -173,20 +177,89 @@ extension FilesViewController: UICollectionViewDelegateFlowLayout,UICollectionVi
     }
     
     func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
-        return 12
+        return pdfDocs.count
     }
     
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
         let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "CustomCollectionViewCell", for: indexPath) as! CollectionViewCell
+        let url = pdfDocs[indexPath.row].documentURL
+        let documentName = url?.lastPathComponent
+
+        
+        if let image = getPDFPreviewImage(url: url!) {
+            // Do something with the image
+            cell.imageView.image = image
+        } else {
+            print("Failed to obtain preview image")
+        }
         
         cell.backgroundColor = .lightGray
-        cell.nameLabel.text = "Get started with eft.pdf" // Replace with the name of your file
-        cell.dateLabel.text = "01.02.2021 • 1171 KB" // Replace with the date of creating file
+        cell.nameLabel.text = documentName
+        cell.dateLabel.text = "01.02.2021 • 1171 KB"
         let imageEllipsis = UIImage(systemName: "ellipsis.rectangle.fill")
         cell.button.setImage(imageEllipsis, for: .normal)
-        cell.button.addTarget(self, action: #selector(print), for: .touchUpInside)
+        cell.button.addTarget(self, action: #selector(didTapButton), for: .touchUpInside)
         
         return cell
+    }
+    
+    func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
+        guard let url = pdfDocs[indexPath.row].documentURL else {
+            return
+        }
+        
+        displayPDF(url: url)
+    }
+    
+    func getPDFPreviewImage(url: URL) -> UIImage? {
+        guard let pdfDocument = PDFDocument(url: url) else { return nil }
+        
+        guard let pdfPage = pdfDocument.page(at: 0) else { return nil }
+        
+        let pageRect = pdfPage.bounds(for: .mediaBox)
+        let renderer = UIGraphicsImageRenderer(size: pageRect.size)
+        
+        let img = renderer.image { ctx in
+            UIColor.white.set()
+            ctx.fill(pageRect)
+            
+            ctx.cgContext.translateBy(x: 0.0, y: pageRect.size.height)
+            ctx.cgContext.scaleBy(x: 1.0, y: -1.0)
+            
+            ctx.cgContext.drawPDFPage(pdfPage.pageRef!)
+        }
+        
+        return img
+    }
+    
+    
+}
+
+extension FilesViewController:UIDocumentPickerDelegate {
+    func documentPicker(_ controller: UIDocumentPickerViewController, didPickDocumentsAt urls: [URL]) {
+        guard let url = urls.first else { return }
+        savePDF(url: url)
+    }
+    
+    func documentPickerWasCancelled(_ controller: UIDocumentPickerViewController) {
+        dismiss(animated: true, completion: nil)
+    }
+    
+    private func savePDF(url: URL) {
+        guard let pdfDocument = PDFDocument(url: url) else {
+            print("Failed to load the PDF document.")
+            return
+        }
+        
+        pdfDocs.append(pdfDocument)
+        collectionView.reloadData()
+    }
+    
+    private func displayPDF(url: URL) {
+        
+        let pdfVC = PDFViewController()
+        pdfVC.pdfURL = url
+        navigationController?.pushViewController(pdfVC, animated: true)
     }
     
     

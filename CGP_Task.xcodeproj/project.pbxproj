@@ -16,6 +16,7 @@
 		66F853192AB0E6A000D5D1A9 /* AccountViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 66F853182AB0E6A000D5D1A9 /* AccountViewController.swift */; };
 		66F8531B2AB0E74700D5D1A9 /* TabBarController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 66F8531A2AB0E74700D5D1A9 /* TabBarController.swift */; };
 		66F8531D2AB21CE500D5D1A9 /* CollectionViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 66F8531C2AB21CE400D5D1A9 /* CollectionViewCell.swift */; };
+		66F853292AB30A6500D5D1A9 /* PDFViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 66F853282AB30A6500D5D1A9 /* PDFViewController.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -30,6 +31,7 @@
 		66F853182AB0E6A000D5D1A9 /* AccountViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AccountViewController.swift; sourceTree = "<group>"; };
 		66F8531A2AB0E74700D5D1A9 /* TabBarController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TabBarController.swift; sourceTree = "<group>"; };
 		66F8531C2AB21CE400D5D1A9 /* CollectionViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CollectionViewCell.swift; sourceTree = "<group>"; };
+		66F853282AB30A6500D5D1A9 /* PDFViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PDFViewController.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -64,6 +66,7 @@
 			children = (
 				66F853152AB0E47300D5D1A9 /* Supporting */,
 				66F853052AB0DEBA00D5D1A9 /* FilesViewController.swift */,
+				66F853282AB30A6500D5D1A9 /* PDFViewController.swift */,
 				66F8531C2AB21CE400D5D1A9 /* CollectionViewCell.swift */,
 				66F853162AB0E66000D5D1A9 /* ToolsViewController.swift */,
 				66F853182AB0E6A000D5D1A9 /* AccountViewController.swift */,
@@ -157,6 +160,7 @@
 				66F853172AB0E66000D5D1A9 /* ToolsViewController.swift in Sources */,
 				66F853192AB0E6A000D5D1A9 /* AccountViewController.swift in Sources */,
 				66F853062AB0DEBA00D5D1A9 /* FilesViewController.swift in Sources */,
+				66F853292AB30A6500D5D1A9 /* PDFViewController.swift in Sources */,
 				66F8531D2AB21CE500D5D1A9 /* CollectionViewCell.swift in Sources */,
 				66F8531B2AB0E74700D5D1A9 /* TabBarController.swift in Sources */,
 				66F853022AB0DEBA00D5D1A9 /* AppDelegate.swift in Sources */,
