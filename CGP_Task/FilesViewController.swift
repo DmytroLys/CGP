@@ -21,6 +21,7 @@ class FilesViewController: UIViewController,UISearchBarDelegate {
         setUpSearchBar()
         setupViews()
         setupConstraints()
+        setupRoundButton()
     }
     
     
@@ -90,7 +91,6 @@ class FilesViewController: UIViewController,UISearchBarDelegate {
         collectionView.delegate = self
         collectionView.dataSource = self
         collectionView.register(CollectionViewCell.self, forCellWithReuseIdentifier: "CustomCollectionViewCell")
-        
     }
     
     func setupConstraints() {
@@ -117,6 +117,52 @@ class FilesViewController: UIViewController,UISearchBarDelegate {
     @objc func print (){
         Swift.print("Hello")
     }
+    
+    func setupRoundButton() {
+        let button = UIButton(type: .system)
+        
+        let mainColor = UIColor(named: "FirstColor") ?? UIColor.blue
+        let lighterColor = mainColor.withAlphaComponent(0.85).cgColor
+        
+        
+        button.setTitle("+", for: .normal)
+            button.setTitleColor(.white, for: .normal)
+        button.titleLabel?.font = UIFont.systemFont(ofSize: 50, weight: .thin)// Adjust the font size as needed
+        button.frame.size = CGSize(width: 60, height: 60)
+        button.layer.cornerRadius = 30
+        view.addSubview(button)
+        
+        let gradientLayer = CAGradientLayer()
+        gradientLayer.colors = [lighterColor, mainColor.cgColor, lighterColor]
+        gradientLayer.startPoint = CGPoint(x: 0.5, y: 0.0)
+        gradientLayer.endPoint = CGPoint(x: 0.5, y: 1.0)
+        
+        button.layer.insertSublayer(gradientLayer, at: 0)
+        
+        button.layer.cornerRadius = 30
+        button.clipsToBounds = true
+        
+        gradientLayer.frame = button.bounds
+        
+        view.addSubview(button)
+        
+        button.translatesAutoresizingMaskIntoConstraints = false
+        
+        let safeArea = view.safeAreaLayoutGuide
+        NSLayoutConstraint.activate([
+            button.widthAnchor.constraint(equalToConstant: 60),
+            button.heightAnchor.constraint(equalToConstant: 60),
+            button.bottomAnchor.constraint(equalTo: safeArea.bottomAnchor, constant: -20),
+            button.trailingAnchor.constraint(equalTo: safeArea.trailingAnchor, constant: -20)
+        ])
+    }
+
+
+    
+    
+    @objc func didTapButton() {
+        Swift.print("Button tapped")
+    }
 }
 
 extension FilesViewController: UICollectionViewDelegateFlowLayout,UICollectionViewDelegate, UICollectionViewDataSource {
@@ -138,13 +184,11 @@ extension FilesViewController: UICollectionViewDelegateFlowLayout,UICollectionVi
         cell.dateLabel.text = "01.02.2021 • 1171 KB" // Replace with the date of creating file
         let imageEllipsis = UIImage(systemName: "ellipsis.rectangle.fill")
         cell.button.setImage(imageEllipsis, for: .normal)
-        
         cell.button.addTarget(self, action: #selector(print), for: .touchUpInside)
-
         
         return cell
     }
     
-
+    
 }
 
