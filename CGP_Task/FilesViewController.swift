@@ -7,6 +7,7 @@
 
 import UIKit
 import PDFKit
+import UniformTypeIdentifiers
 
 class FilesViewController: UIViewController,UISearchBarDelegate {
     
@@ -84,7 +85,6 @@ class FilesViewController: UIViewController,UISearchBarDelegate {
         button.heightAnchor.constraint(equalToConstant: 36).isActive = true
         button.layer.cornerRadius = 10
         button.layer.borderWidth = 0.5
-        button.contentEdgeInsets = UIEdgeInsets(top: button.contentEdgeInsets.top + 5, left: button.contentEdgeInsets.left + 5, bottom: button.contentEdgeInsets.bottom + 5, right: button.contentEdgeInsets.right + 5)
         button.layer.borderColor = UIColor.gray.cgColor
     }
     
@@ -157,15 +157,13 @@ class FilesViewController: UIViewController,UISearchBarDelegate {
         
         button.addTarget(self, action: #selector(didTapButton), for: .touchUpInside)
     }
-    
-    
+
     @objc func didTapButton() {
         
-        let pdfType = "com.adobe.pdf"
-        let documentPicker = UIDocumentPickerViewController(documentTypes: [pdfType], in: .import)
-        documentPicker.delegate = self
-        documentPicker.allowsMultipleSelection = false
-        present(documentPicker, animated: true, completion: nil)
+        let documentPicker = UIDocumentPickerViewController(forOpeningContentTypes: [UTType.pdf])
+               documentPicker.delegate = self
+               documentPicker.allowsMultipleSelection = false
+               present(documentPicker, animated: true, completion: nil)
     }
 }
 
@@ -202,9 +200,19 @@ extension FilesViewController: UICollectionViewDelegateFlowLayout,UICollectionVi
         cell.nameLabel.text = documentName
         let imageEllipsis = UIImage(systemName: "ellipsis.rectangle.fill")
         cell.button.setImage(imageEllipsis, for: .normal)
-        cell.button.addTarget(self, action: #selector(didTapButton), for: .touchUpInside)
+        cell.button.addTarget(self, action: #selector(tapButton(sender:)), for: .touchUpInside)
         
         return cell
+    }
+    
+    @objc func tapButton(sender: UIButton) {
+        let alert = UIAlertController(title: "", message: "Please Select an Option", preferredStyle: .actionSheet)
+
+        alert.addAction(UIAlertAction(title: "Delete", style: .destructive , handler:{ (UIAlertAction)in
+            self.pdfDocs.remove(at: sender.tag)
+            self.collectionView.reloadData()
+            }))
+        self.present(alert, animated: true, completion: nil)
     }
     
     func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
@@ -298,7 +306,5 @@ extension FilesViewController:UIDocumentPickerDelegate {
         pdfVC.pdfURL = url
         navigationController?.pushViewController(pdfVC, animated: true)
     }
-    
-    
 }
 
