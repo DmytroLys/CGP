@@ -11,36 +11,42 @@ import UniformTypeIdentifiers
 
 class FilesViewController: UIViewController,UISearchBarDelegate {
     
-    let searchBar = UISearchBar()
-    let collectionView = UICollectionView(frame: .zero, collectionViewLayout: UICollectionViewFlowLayout())
+   private let searchBar = UISearchBar()
+   private let collectionView = UICollectionView(frame: .zero, collectionViewLayout: UICollectionViewFlowLayout())
+   private var activityIndicator = UIActivityIndicatorView()
+
     
-    var pdfDocs = [PDFDocument]()
+    var pdfDocs = [PDFDocumentModel]()
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        self.view.backgroundColor = .systemBackground
         
+        self.view.backgroundColor = .systemBackground
+        setUpUI()
+    }
+    
+    private func setUpUI () {
         setupNavigationBarTitle()
         addRightBarButtonItems()
         setUpSearchBar()
         setupViews()
-        setupConstraints()
         setupRoundButton()
+        setupConstraints()
+        configureActivityIndicator()
     }
     
-    
-    private func setUpSearchBar() {
-        searchBar.backgroundImage = UIImage()
-        searchBar.placeholder = "Search documents"
-        searchBar.delegate = self
-        view.addSubview(searchBar)
+    private func configureActivityIndicator() {
+        activityIndicator = UIActivityIndicatorView(style: .large)
+        activityIndicator.center = view.center
+        activityIndicator.color = .gray
+        view.addSubview(activityIndicator)
     }
     
     private func  setupNavigationBarTitle() {
         
         let titleLabel = UILabel()
         
-        let attributedString = NSAttributedString(string: "My Files", attributes: [
+        let attributedString = NSAttributedString(string: Constants.navBarTitle, attributes: [
             .font: UIFont.systemFont(ofSize: 26, weight: .bold),
             .foregroundColor: UIColor.black,
         ])
@@ -87,13 +93,19 @@ class FilesViewController: UIViewController,UISearchBarDelegate {
         button.layer.borderWidth = 0.5
         button.layer.borderColor = UIColor.gray.cgColor
     }
+    private func setUpSearchBar() {
+        searchBar.backgroundImage = UIImage()
+        searchBar.placeholder = Constants.searchBarPlaceholder
+        searchBar.delegate = self
+        view.addSubview(searchBar)
+    }
     
     func setupViews() {
         view.addSubview(collectionView)
         
         collectionView.delegate = self
         collectionView.dataSource = self
-        collectionView.register(CollectionViewCell.self, forCellWithReuseIdentifier: "CustomCollectionViewCell")
+        collectionView.register(CollectionViewCell.self, forCellWithReuseIdentifier: Constants.CollectionView.cellIdentifier)
     }
     
     func setupConstraints() {
@@ -117,97 +129,61 @@ class FilesViewController: UIViewController,UISearchBarDelegate {
         ])
     }
     
-    func setupRoundButton() {
-        let button = UIButton(type: .system)
-        
-        let mainColor = UIColor(named: "FirstColor") ?? UIColor.blue
-        let lighterColor = mainColor.withAlphaComponent(0.85).cgColor
-        
-        
-        button.setTitle("+", for: .normal)
-        button.setTitleColor(.white, for: .normal)
-        button.titleLabel?.font = UIFont.systemFont(ofSize: 50, weight: .thin)
-        button.frame.size = CGSize(width: 60, height: 60)
-        button.layer.cornerRadius = 30
-        view.addSubview(button)
-        
-        let gradientLayer = CAGradientLayer()
-        gradientLayer.colors = [lighterColor, mainColor.cgColor, lighterColor]
-        gradientLayer.startPoint = CGPoint(x: 0.5, y: 0.0)
-        gradientLayer.endPoint = CGPoint(x: 0.5, y: 1.0)
-        
-        button.layer.insertSublayer(gradientLayer, at: 0)
-        
-        button.layer.cornerRadius = 30
-        button.clipsToBounds = true
-        
-        gradientLayer.frame = button.bounds
-        
-        view.addSubview(button)
-        
-        button.translatesAutoresizingMaskIntoConstraints = false
-        
+    func setUpConstraintsForButton(to button: UIButton) {
         let safeArea = view.safeAreaLayoutGuide
+
         NSLayoutConstraint.activate([
             button.widthAnchor.constraint(equalToConstant: 60),
             button.heightAnchor.constraint(equalToConstant: 60),
             button.bottomAnchor.constraint(equalTo: safeArea.bottomAnchor, constant: -20),
             button.trailingAnchor.constraint(equalTo: safeArea.trailingAnchor, constant: -20)
         ])
-        
-        button.addTarget(self, action: #selector(didTapButton), for: .touchUpInside)
     }
-
-    @objc func didTapButton() {
+    
+    func setupRoundButton() {
+        let button = RoundButton(frame: CGRect(x: 0, y: 0, width: 60, height: 60))
+                
+                view.addSubview(button)
+                setUpConstraintsForButton(to: button)
+                
+                button.addTarget(self, action: #selector(openPickerViewController), for: .touchUpInside)
+    }
+    
+    @objc func openPickerViewController() {
         
         let documentPicker = UIDocumentPickerViewController(forOpeningContentTypes: [UTType.pdf])
-               documentPicker.delegate = self
-               documentPicker.allowsMultipleSelection = false
-               present(documentPicker, animated: true, completion: nil)
-    }
-}
-
-extension FilesViewController: UICollectionViewDelegateFlowLayout,UICollectionViewDelegate, UICollectionViewDataSource {
-    func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, sizeForItemAt indexPath: IndexPath) -> CGSize
-    {
-        // In this function is the code you must implement to your code project if you want to change size of Collection view
-        return CGSize(width: 116, height: 202)
+        documentPicker.delegate = self
+        documentPicker.allowsMultipleSelection = false
+        present(documentPicker, animated: true, completion: nil)
     }
     
-    func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
-        return pdfDocs.count
-    }
-    
-    func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
-        let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "CustomCollectionViewCell", for: indexPath) as! CollectionViewCell
-        let url = pdfDocs[indexPath.row].documentURL
-        let documentName = url?.lastPathComponent
-
+    private func addPDFtoArray(url: URL) {
+        let pdfDocument = PDFDocumentModel(documentURL: url)
         
-        if let image = getPDFPreviewImage(url: url!) {
-            // Do something with the image
-            cell.imageView.image = image
-        } else {
-            print("Failed to obtain preview image")
+        activityIndicator.startAnimating()
+    
+        DispatchQueue.global().async {
+            self.pdfDocs.append(pdfDocument)
+            DispatchQueue.main.async {
+                self.collectionView.reloadData()
+                self.activityIndicator.stopAnimating()
+            }
         }
-        
-        if let fileAttributesText = getFileAttributes(url: url) {
-            cell.dateLabel.text = fileAttributesText
-        } else {
-            print("Failed to get file attributes")
+        DispatchQueue.main.async {
+            self.collectionView.reloadData()
         }
-        
-        cell.nameLabel.text = documentName
-        let imageEllipsis = UIImage(systemName: "ellipsis.rectangle.fill")
-        cell.button.setImage(imageEllipsis, for: .normal)
-        cell.button.addTarget(self, action: #selector(tapButton(sender:)), for: .touchUpInside)
-        
-        return cell
     }
     
-    @objc func tapButton(sender: UIButton) {
+     func displayPDF(url: URL) {
+        
+        let pdfVC = PDFViewController()
+        pdfVC.pdfURL = url
+        navigationController?.pushViewController(pdfVC, animated: true)
+    }
+    
+    @objc func editButtonTapped(sender: UIButton) {
         let alert = UIAlertController(title: "", message: "Please Select an Option", preferredStyle: .actionSheet)
-
+        
         alert.addAction(UIAlertAction(title: "Delete", style: .destructive , handler:{ (UIAlertAction)in
             self.pdfDocs.remove(at: sender.tag)
             self.collectionView.reloadData()
@@ -215,13 +191,6 @@ extension FilesViewController: UICollectionViewDelegateFlowLayout,UICollectionVi
         self.present(alert, animated: true, completion: nil)
     }
     
-    func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
-        guard let url = pdfDocs[indexPath.row].documentURL else {
-            return
-        }
-        
-        displayPDF(url: url)
-    }
     
     func getPDFPreviewImage(url: URL) -> UIImage? {
         guard let pdfDocument = PDFDocument(url: url) else { return nil }
@@ -244,67 +213,74 @@ extension FilesViewController: UICollectionViewDelegateFlowLayout,UICollectionVi
         return img
     }
     
-    func getFileAttributes(url: URL?) -> String? {
-        guard let url = url else {
-            return nil
-        }
-        
-        do {
-            let fileAttributes = try FileManager.default.attributesOfItem(atPath: url.path)
-            
-            // Get file creation date
-            var dateText: String?
-            if let creationDate = fileAttributes[.creationDate] as? Date {
-                let dateFormatter = DateFormatter()
-                dateFormatter.dateFormat = "dd.MM.yyyy"
-                dateText = dateFormatter.string(from: creationDate)
-            }
-            
-            // Get file size in KB
-            var fileSizeText: String?
-            if let fileSize = fileAttributes[.size] as? NSNumber {
-                let fileSizeInKB = fileSize.doubleValue / 1024.0
-                fileSizeText = String(format: "%.0f KB", fileSizeInKB)
-            }
-            
-            if let dateText = dateText, let fileSizeText = fileSizeText {
-                return "\(dateText) • \(fileSizeText)"
-            }
-        } catch {
-            print("Failed to get file attributes: \(error.localizedDescription)")
-        }
-        
-        return nil
+}
+
+// MARK: - UICollectionViewDelegate + UICollectionViewDataSource
+
+extension FilesViewController: UICollectionViewDataSource {
+    
+    func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
+        return pdfDocs.count
     }
     
+    func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
+        let cell = collectionView.dequeueReusableCell(withReuseIdentifier: Constants.CollectionView.cellIdentifier, for: indexPath) as! CollectionViewCell
+        let document = pdfDocs[indexPath.row]
+        let url = document.documentURL
+        let documentName = document.documentName
+        
+        
+        if let image = getPDFPreviewImage(url: url) {
+            // Do something with the image
+            cell.imageView.image = image
+        } else {
+            print(Constants.AlertMessages.failedToGetPreviewImage)
+        }
+        
+        if let fileAttributesText = document.fileAttributes {
+            cell.dateLabel.text = fileAttributesText
+        } else {
+            print(Constants.AlertMessages.failedToGetFileAttributes)
+        }
+        
+        cell.nameLabel.text = documentName
+        let imageEllipsis = UIImage(systemName: Constants.ImageNames.ellipsisRectangleFill)
+        cell.button.setImage(imageEllipsis, for: .normal)
+        cell.button.addTarget(self, action: #selector(editButtonTapped(sender:)), for: .touchUpInside)
+        
+        return cell
+    }
     
 }
 
+// MARK: - UICollectionViewDelegate
+
+extension FilesViewController: UICollectionViewDelegate {
+    func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
+        let url = pdfDocs[indexPath.row].documentURL
+        
+        displayPDF(url: url)
+    }
+}
+
+
+// MARK: - UICollectionViewDelegateFlowLayout
+extension FilesViewController: UICollectionViewDelegateFlowLayout {
+    func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, sizeForItemAt indexPath: IndexPath) -> CGSize {
+
+        return CGSize(width: 116, height: 202)
+    }
+    
+}
+// MARK: - UIDocumentPickerDelegate
 extension FilesViewController:UIDocumentPickerDelegate {
     func documentPicker(_ controller: UIDocumentPickerViewController, didPickDocumentsAt urls: [URL]) {
         guard let url = urls.first else { return }
-        savePDF(url: url)
+        addPDFtoArray(url: url)
     }
     
     func documentPickerWasCancelled(_ controller: UIDocumentPickerViewController) {
         dismiss(animated: true, completion: nil)
-    }
-    
-    private func savePDF(url: URL) {
-        guard let pdfDocument = PDFDocument(url: url) else {
-            print("Failed to load the PDF document.")
-            return
-        }
-        
-        pdfDocs.append(pdfDocument)
-        collectionView.reloadData()
-    }
-    
-    private func displayPDF(url: URL) {
-        
-        let pdfVC = PDFViewController()
-        pdfVC.pdfURL = url
-        navigationController?.pushViewController(pdfVC, animated: true)
     }
 }
 
