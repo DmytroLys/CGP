@@ -24,8 +24,6 @@ class AccountViewController: UIViewController {
         signInButton.center = self.view.center
     }
     
-    
-    
     private func setupGoogle() {
         
         guard let clientID = FirebaseApp.app()?.options.clientID else { return }
@@ -34,7 +32,6 @@ class AccountViewController: UIViewController {
         let config = GIDConfiguration(clientID: clientID)
                 
         GIDSignIn.sharedInstance.configuration = config
-            
         }
         
        @objc func googleTapped() {
@@ -48,9 +45,6 @@ class AccountViewController: UIViewController {
                 print("Auth Success")
                 self.view.backgroundColor = .green
             }
-           
-           
         }
-        
     }
 
